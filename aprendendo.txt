@@ -1,0 +1,429 @@
+Aula 1 - Iniciando projeto
+    - Após instalar as dependências anotadas no README.md, criar o arquivo app.js e configura-lo 
+    o code:
+
+    require('dotenv').config()
+    const express = require('express')
+    const path = require('path')
+    const cors = require('cors')
+
+    const port = process.env.PORT -> já foi criado o arquivo .env e configurado a porta
+
+    const app = express()
+
+    // config JSON and form data response
+    app.use(express.json())
+    app.use(express.urlencoded(({ extended: false })))
+
+    app.listen(port, () => {
+        console.log(`App rodando na porta ${port}`)
+    })
+
+    - Configurar o script para inicia-lo no package.json 
+    "server": "nodemon ./app.js"
+
+Aula 2 - Criação de Rota e middleware
+
+    - pasta de routes -> arquivo router e inicio das routes 
+    o code: /app.js:
+        // Solve CORS
+        app.use(cors({ credentials: true, origin: "http://localhost:3000"})) -> para não bloquear o CORS
+
+
+        // routes
+        const router = require('./routes/Router.js')
+        app.use(router);
+
+    o code: ./routes/Router.js:
+        const express = require("express")
+
+        const router = express()
+
+        router.get('/', (req, res) => {
+            res.send('API WORKING')
+        })
+
+        module.exports = router
+
+
+Aula 3 - Conexão de banco de dados
+    - Entra no site https://cloud.mongodb.com para criação de banco de dados
+    Passo a Passo:
+    1: New Project 
+        Name Project and Create Project
+        Create Cluster FREE and create user
+        User: VictorPortela
+        Password: WRFzKWyyoN2QXqAz
+        Add IP Address : use your IP Address
+    2: Connect
+        Connect to you application
+        mongodb+srv://VictorPortela:<db_password>@cluster0.ytdbsws.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+
+    - Criação do DataBase -> folder config -> file db.js
+     o code: ./app.js: 
+        // DB connection 
+        require('./config/db.js')
+
+    o code: ./config/db.js
+    const mongoose = require("mongoose")
+    const dbUser = process.env.DB_USER
+    const dbPassword = process.env.DB_PASSWORD
+
+    const conn = async () => {
+        try {
+            const dbConn = await mongoose.connect(
+                `mongodb+srv://${dbUser}:${dbPassword}@cluster0.ytdbsws.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`
+            )
+
+            console.log(`Conectou ao banco!`)
+
+            return dbConn
+        } catch (error) {
+            console.log(error)
+        }
+
+        conn()
+    }
+
+    module.exports = conn
+
+
+Aula 4 - Criação User
+    - Create folder -> models
+    - Create file -> User.js
+
+    o code User.js:
+    const mongoose = require('mongoose')
+    const { Schema } = mongoose
+
+    const userSchema = new Schema(
+        {
+        name: String,
+        email: String,
+        password: String,
+        telefone: String,
+        cpf: String
+        },
+        {
+            timestamps: true
+        }
+        )
+
+    const User = mongoose.model("User", userSchema)
+
+    module.exports = User
+
+Aula 5 - Criação do Controller
+    - Create Folder -> controllers
+    - Create File -> UserController.js
+    - Create File -> Router -> UserRoutes.js
+
+    o code UserController.js:
+    const User = require('../models/User')
+
+    const bcrypt = require('bcryptjs')
+    const jwt = require('jsonwebtoken');
+
+    const jwtSecret = process.env.JWT_SECRET
+
+    // Generate user token
+    const generateToken = (id) => {
+        return jwt.sign({ id }, jwtSecret, {
+            expiresIn: "7d",
+        })
+    }
+
+    // Register user and sign in 
+    const register = async (req, res) => {
+        res.send("Registro") -> Aqui é só um exemplo de teste
+    }
+
+    module.exports = {
+        register,
+    }
+
+    o code Router: 
+
+    router.use('/api/users', require('./UserRoutes'))
+
+    o code UserRoutes:
+    const express = require('express')
+    const router = express.Router()
+
+    // Controller 
+    const {register} = require("../controllers/UserController")
+    
+    router.post('/register', register);
+
+    module.exports = router;
+
+
+Aula 6 - Iniciando validações 
+    - Create Folder middleware 
+    - Create File handlevalidation.js
+
+    o code UserRoutes: 
+    //middleware
+    const validate = require('../middlewares/handleValidation');
+
+    o code handlevalidation:
+    const { validationResult } = require('express-validator')
+
+    const validate = (req, res, next) => {
+
+        const errors = validationResult(req)
+
+        if (errors.isEmpty()) {
+            return next()
+        }
+
+        const extractedErros = [
+
+        ]
+
+        errors.array().map((err) => extractedErros.push(err.msg))
+
+        return res.status(422).json({
+            errors: extractedErros,
+        })
+    }
+
+    module.exports = validate
+
+Aula 7 - Criação de validações
+    - In folder middleware - Create file userValidation.js 
+    o code UserRoutes:
+    const {userCreateValidation} = require("../middlewares/userValidations")
+
+    router.post('/register',userCreateValidation(), validate, register); -> utilizar a function userCreateValidation com ()
+
+    o code userValidation.js:
+    const { body } = require('express-validator')
+
+    // Função para validar CPF 
+    function isValidCPF(cpf) {
+        cpf = cpf.replace(/[^\d]+/g, "") // remove pontos e traços
+
+        if (!cpf || cpf.length !== 11) return false
+
+        // Elimina CPFs inválidos conhecidos
+        if (/^(\d)\1{10}$/.test(cpf)) return false
+
+        let soma = 0
+        let resto
+
+        // Primeiro dígito verificador
+        for (let i = 1; i <= 9; i++) {
+            soma += parseInt(cpf.substring(i - 1, i)) * (11 - i)
+        }
+        resto = (soma * 10) % 11
+        if (resto === 10 || resto === 11) resto = 0
+        if (resto !== parseInt(cpf.substring(9, 10))) return false
+
+        soma = 0
+        // Segundo dígito verificador
+        for (let i = 1; i <= 10; i++) {
+            soma += parseInt(cpf.substring(i - 1, i)) * (12 - i)
+        }
+        resto = (soma * 10) % 11
+        if (resto === 10 || resto === 11) resto = 0
+        if (resto !== parseInt(cpf.substring(10, 11))) return false
+
+        return true
+    }
+
+    const userCreateValidation = () => {
+        return [
+            body("name")
+                .isString() 
+                .trim() -> para tirar os espaços
+                .escape() -> para remover textos malisiosos
+                .withMessage("O nome é obrigatório.")
+                .isLength({ min: 3 })
+                .withMessage("O nome precisa ter no mínimo 3 caracteres"),
+            body("email")
+                .isString()
+                .trim() -> para tirar os espaços
+                .withMessage("O E-mail é obrigatório.")
+                .isEmail()
+                .withMessage("Insira um e-mail válido."),
+            body("password")
+                .isString()
+                .withMessage("A senha é obrigatória")
+                .isLength({ min: 5 })
+                .withMessage("A senha precisa ter no mínimo 5 caracteres"),
+            body("confirmpassword")
+                .isString()
+                .withMessage("A confirmação da senha é obrigatória")
+                .custom((value, { req }) => {
+                    if (value != req.body.password) {
+                        throw new Error("As senhas não são iguais")
+                    }
+                    return true
+                }),
+            body("phone")
+                .notEmpty().withMessage("O número de telefone")
+                .isString()
+                .matches(/^\d{10,11}$/).withMessage('O telefone deve ter 10 ou 11 dígitos'),
+            body("cpf")
+                .notEmpty().withMessage("O CPF é obrigatório.")
+                .isString()
+                .custom((value) => {
+                    if (!isValidCPF(value)) {
+                        throw new Error("CPF inválido")
+                    }
+                    return true
+                }),
+        ]
+    }
+
+    module.exports = {
+        userCreateValidation,
+
+    }
+
+Aula 8 - Registro de Usuário.
+    - Ajustando a Função sobre a rota register
+
+    o code userController.js:
+    // Register user and sign in 
+        const register = async (req, res) => {
+
+            const { name, email, password, phone, cpf } = req.body
+
+            try {
+                // Check if
+                const user = await User.findOne({ email })
+
+                if (user) {
+                    res.status(409).json({ errors: ["Por favor, utilize outro e-mail"] })
+                    return
+                }
+
+                // Generate password hash
+                const salt = await bcrypt.genSalt()
+                const passwordHash = await bcrypt.hash(password, salt)
+
+                // Create user 
+                const newUser = await User.create({
+                    name,
+                    email,
+                    password: passwordHash,
+                    phone,
+                    cpf
+                })
+
+                // If user was created succesfully, return the token
+                if (!newUser) {
+                    res.status(422).json({ errors: ["Houve um erro, por favor tente mais tarde."] })
+                    return
+                }
+
+                res.status(201).json({
+                    _id: newUser._id,
+                    token: generateToken(newUser._id)
+                })
+            } catch (error) {
+                console.log(error)
+                res.status(500).json({ errors: ["Houve um erro interno no servidor. Por favor, tente novamente mais tarde."] });
+            }
+
+        }
+
+Aula 9 - Autenticação de User
+    - Create the validation of login
+    - Create router login
+    - Create controller login
+
+    o code userValidations :
+        const loginValidation = () => {
+        return [
+            body("email")
+                .isString().withMessage("O e-mail é obrigatório")
+                .isEmail().withMessage("Insira um E-mail válido."),
+            body("password")
+                .isString().withMessage("A senha é obrigatória")
+            ]
+        }
+
+    o code Router.js: 
+    router.post('/login', loginValidation(), validate, login)
+
+    o code userController: 
+        const login = async (req, res) => {
+        const { email, password } = req.body
+
+        try {
+            const user = await User.findOne({ email })
+
+            // Check if user exists
+            if (!user) {
+                res.status(404).json({ errors: ["Usuário não encontrado"] })
+                return
+            }
+
+            // Check if password matches
+            if (!(await bcrypt.compare(password, user.password))) {
+                res.status(422).json({ errors: ["A senha inválida."] })
+                return;
+            }
+
+            // Return user with token
+            res.status(201).json({
+                _id: user._id,
+                token: generateToken(user._id)
+            })
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ errors: ["Ocorreu um erro no servidor, tente novamente mais tarde."] });
+            }
+        }
+
+Aula 10 - Criação do middleware authGuard
+    - Create file authGuard.js in folder middlewares
+    - Utilizando para atualizações importante exemplo: foto de perfil ou adicionar algo no carrinho
+    - Create a function for get current user
+    o code in authGuard.js:
+
+    const User = require('../models/User')
+    const jwt = require('jsonwebtoken')
+    const jwtSecret = process.env.JWT_SECRET
+
+    const authGuard = async (req, res, next) => {
+        const authHeader = req.headers["authorization"]
+        const token = authHeader && authHeader.split(" ")[1]
+
+        // Check if header has a token
+        if (!token) return res.status(401).json({ errors: ["Acesso negado"] })
+
+        // Check if token is valid
+
+        try {
+            const verified = jwt.verify(token, jwtSecret)
+
+            req.user = await User.findById(verified.id).select("-password")
+
+            next()
+        } catch (error) {
+            res.status(401).json({ errors: ["Token inválido."] })
+        }
+    }
+
+    module.exports = authGuard
+
+    - in file userController.js:
+    // Get current logged in user 
+    const getCurrentUser = async (req, res) => {
+        const user = req.user
+
+        res.status(200).json(user)
+    }
+
+    - Create router in UserRoutes.js
+    const { getCurrentUser } = require("../controllers/UserController")
+    
+    const authGuard = require('../middlewares/authGuard')
+
+    router.get("/profile", authGuard, getCurrentUser)
+
+
