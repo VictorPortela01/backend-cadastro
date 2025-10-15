@@ -52,7 +52,7 @@ const userCreateValidation = () => {
             .withMessage("A senha é obrigatória")
             .isLength({ min: 5 })
             .withMessage("A senha precisa ter no mínimo 5 caracteres"),
-        body("confirmpassword")
+        body("confirmPassword")
             .isString()
             .withMessage("A confirmação da senha é obrigatória")
             .custom((value, { req }) => {
@@ -63,8 +63,7 @@ const userCreateValidation = () => {
             }),
         body("phone")
             .notEmpty().withMessage("O número de telefone")
-            .isString()
-            .matches(/^\d{10,11}$/).withMessage('O telefone deve ter 10 ou 11 dígitos'),
+            .matches(/^\(\d{2}\)\s\d{4,5}-\d{4}$/).withMessage('Formato inválido. Use (xx) xxxxx-xxxx'),
         body("cpf")
             .notEmpty().withMessage("O CPF é obrigatório.")
             .isString()
