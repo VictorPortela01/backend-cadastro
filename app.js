@@ -4,7 +4,7 @@ const express = require('express')
 
 const cors = require('cors')
 
-const port = process.env.PORT
+const port = process.env.PORT || 5000
 
 const app = express()
 
@@ -16,8 +16,8 @@ app.use(express.urlencoded(({ extended: false })))
 
 // 1. Crie uma lista de origens permitidas
 const allowedOrigins = [
-  'http://localhost:3000',      // Sua origem de desenvolvimento local
-  process.env.FRONTEND_URL     // A URL do seu frontend em produção (que você vai configurar no Railway)
+  'http://localhost:3000',      
+  process.env.FRONTEND_URL  || "" // Colocar um futuro frontend
 ];
 
 // 2. Crie as opções do CORS
