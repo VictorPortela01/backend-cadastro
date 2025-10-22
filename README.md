@@ -1,41 +1,40 @@
-# 🚀 API com Node.js, Express e MongoDB
+# 🚀 API de Cadastro com Node.js, Express e MongoDB
+> Projeto backend com autenticação JWT, validações e arquitetura modular.
 
-![Node.js](https://img.shields.io/badge/Node.js-18.x-green?logo=node.js)\
-![Express](https://img.shields.io/badge/Express-4.x-blue?logo=express)\
-![MongoDB](https://img.shields.io/badge/MongoDB-6.x-brightgreen?logo=mongodb)\
-![JWT](https://img.shields.io/badge/Auth-JWT-orange?logo=jsonwebtokens)
+🔗 **Deploy:** [https://backend-cadastro.onrender.com](https://backend-cadastro.onrender.com)
 
-------------------------------------------------------------------------
+---
+
+## 🎯 Objetivo do Projeto
+O objetivo deste projeto foi construir uma API RESTful completa com autenticação segura, seguindo boas práticas de arquitetura e validação de dados.  
+Desenvolvido para consolidar o aprendizado em **Node.js**, **Express** e **MongoDB**.
+
+---
 
 ## 📌 Sobre o Projeto
+API desenvolvida em **Node.js + Express + MongoDB** com autenticação via **JWT**, validações usando **express-validator** e arquitetura organizada em **controllers, models, routes e middlewares**.
 
-API desenvolvida em **Node.js + Express + MongoDB** com autenticação via
-**JWT**, validações usando **express-validator** e arquitetura
-organizada em **controllers, models, routes e middlewares**.
-
-------------------------------------------------------------------------
+---
 
 ## ⚙️ Dependências
 
 ### 📦 Produção
-
--   **bcryptjs** → criptografia de senhas.\
--   **cors** → controle de origens.\
--   **dotenv** → variáveis de ambiente.\
--   **express** → framework web.\
--   **express-validator** → middleware de validação.\
--   **jsonwebtoken** → autenticação.\
--   **mongoose** → ODM para MongoDB.
+- **bcryptjs** → criptografia de senhas.  
+- **cors** → controle de origens.  
+- **dotenv** → variáveis de ambiente.  
+- **express** → framework web.  
+- **express-validator** → middleware de validação.  
+- **jsonwebtoken** → autenticação.  
+- **mongoose** → ODM para MongoDB.
 
 ### 🔧 Desenvolvimento
+- **nodemon** → auto-restart do servidor em dev.
 
--   **nodemon** → auto-restart do servidor em dev.
-
-------------------------------------------------------------------------
+---
 
 ## 📥 Instalação
 
-``` bash
+```bash
 git clone <url-do-repo>
 cd <nome-do-projeto>
 
@@ -46,13 +45,13 @@ npm install
 npm install --save-dev nodemon
 ```
 
-------------------------------------------------------------------------
+---
 
 ## ⚡ Scripts
 
 No `package.json`:
 
-``` json
+```json
 "scripts": {
   "server": "nodemon ./app.js"
 }
@@ -60,11 +59,11 @@ No `package.json`:
 
 Rodar servidor:
 
-``` bash
+```bash
 npm run server
 ```
 
-------------------------------------------------------------------------
+---
 
 ## 📂 Estrutura de Pastas
 
@@ -86,32 +85,29 @@ npm run server
      ┣ 📜 .env
      ┗ 📜 package.json
 
-------------------------------------------------------------------------
+---
 
 ## 🔑 Variáveis de Ambiente
 
 Crie `.env` na raiz:
 
-``` env
+```env
 PORT=5000
-DB_USER=seu_usuario_mongo
-DB_PASSWORD=sua_senha_mongo
+DBMONGOURI="Sua URL Completa do mongo connect"
 JWT_SECRET=sua_chave_secreta
 ```
 
-------------------------------------------------------------------------
+---
 
 ## 📌 Endpoints da API
 
 ### 👤 Usuários
 
 #### **Registro**
-
 `POST /api/users/register`
 
 **Request:**
-
-``` json
+```json
 {
   "name": "Victor",
   "email": "victor@email.com",
@@ -123,23 +119,20 @@ JWT_SECRET=sua_chave_secreta
 ```
 
 **Response:**
-
-``` json
+```json
 {
   "_id": "64c2f7d1e4a8b6a9f7e11234",
   "token": "jwt_token_aqui"
 }
 ```
 
-------------------------------------------------------------------------
+---
 
 #### **Login**
-
 `POST /api/users/login`
 
 **Request:**
-
-``` json
+```json
 {
   "email": "victor@email.com",
   "password": "123456"
@@ -147,24 +140,21 @@ JWT_SECRET=sua_chave_secreta
 ```
 
 **Response:**
-
-``` json
+```json
 {
   "_id": "64c2f7d1e4a8b6a9f7e11234",
   "token": "jwt_token_aqui"
 }
 ```
 
-------------------------------------------------------------------------
+---
 
 #### **Perfil (Protegido)**
-
-`GET /api/users/profile`\
-🔒 Necessário enviar **Authorization: Bearer `<token>`{=html}**
+`GET /api/users/profile`  
+🔒 Necessário enviar **Authorization: Bearer <token>**
 
 **Response:**
-
-``` json
+```json
 {
   "_id": "64c2f7d1e4a8b6a9f7e11234",
   "name": "Victor",
@@ -175,13 +165,28 @@ JWT_SECRET=sua_chave_secreta
 }
 ```
 
-------------------------------------------------------------------------
+---
 
 ## 🛠️ Tecnologias Utilizadas
+- 🟩 **Node.js**
+- ⚡ **Express**
+- 🍃 **MongoDB (Atlas)**
+- 🧠 **Mongoose**
+- 🔐 **JWT (Json Web Token)**
+- 🧰 **Express Validator**
+- 🔑 **Bcrypt**
+- ⚙️ **Dotenv**
 
--   Node.js\
--   Express\
--   MongoDB (Atlas)\
--   Mongoose\
--   JWT (Json Web Token)\
--   Express Validator
+---
+
+## 📚 Aprendizados
+Durante o desenvolvimento, aprofundei meus conhecimentos em:
+- Criação de APIs RESTful e rotas protegidas com JWT.
+- Validação de dados no backend usando middlewares.
+- Conexão e modelagem de dados com MongoDB e Mongoose.
+- Organização modular do código (controllers, models, routes, middlewares).
+
+---
+
+👨‍💻 Desenvolvido por **Victor** — Estudante de Análise e Desenvolvimento de Sistemas.  
+📬 [LinkedIn](https://www.linkedin.com/in/victorportelav) • [GitHub](https://github.com/VictorPortela01)
